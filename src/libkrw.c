@@ -71,13 +71,13 @@ static int obtain_krw_funcs(void *plugin) {
 
 static void iterate_plugins(int (*callback)(void *), void **check) {
     struct dirent **plugins;
-    ssize_t nument = scandir("/usr/lib/libkrw", &plugins, &scandir_dylib_select, &scandir_alpha_compar);
+    ssize_t nument = scandir("/var/jb/usr/lib/libkrw", &plugins, &scandir_dylib_select, &scandir_alpha_compar);
     // Load any kcall handlers
     if (nument != -1) {
-        char *path = strdup("/usr/lib/libkrw/");
-        size_t path_size = strlen("/usr/lib/libkrw/");
+        char *path = strdup("/var/jb/usr/lib/libkrw/");
+        size_t path_size = strlen("/var/jb/usr/lib/libkrw/");
         for (int i=0; *check == NULL && i<nument; i++) {
-            size_t plugin_path_len = strlen("/usr/lib/libkrw/") + plugins[i]->d_namlen;
+            size_t plugin_path_len = strlen("/var/jb/usr/lib/libkrw/") + plugins[i]->d_namlen;
             if (path_size < plugin_path_len) {
                 char *newpath = realloc(path, plugin_path_len + 1);
                 if (newpath == NULL) {
@@ -86,14 +86,16 @@ static void iterate_plugins(int (*callback)(void *), void **check) {
                 }
                 path = newpath;
             }
-            strcpy(path+strlen("/usr/lib/libkrw/"), plugins[i]->d_name);
+            strcpy(path+strlen("/var/jb/usr/lib/libkrw/"), plugins[i]->d_name);
             void *plugin = dlopen(path, RTLD_LOCAL|RTLD_LAZY);
             if (plugin == NULL) {
                 fprintf(stderr, "Error attempting to load plugin %s: %s\n", path, dlerror());
                 continue;
             }
             int rv = callback(plugin);
-            if (rv == 0) break;
+            if (rv == 0)  {
+                break;
+            }
 
             if (rv == ENOSYS) {
                 fprintf(stderr, "KRW plugin %s did not provide functions it purported to provide\n", path);
