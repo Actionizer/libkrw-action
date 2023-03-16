@@ -60,7 +60,7 @@ $(PKG)/bin/control: | $(PKG)/bin
 	  echo 'Name: libkrw'; \
 	  echo 'Author: Siguza'; \
 	  echo 'Maintainer: Siguza'; \
-	  echo 'Architecture: iphoneos-arm'; \
+	  echo 'Architecture: iphoneos-arm64'; \
 	  echo 'Version: $(CURRENT_VERSION)'; \
 	  echo 'Priority: optional'; \
 	  echo 'Section: Development'; \
