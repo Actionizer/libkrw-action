@@ -1,5 +1,5 @@
 ABI_VERSION     := 0
-CURRENT_VERSION := 1.1.1
+CURRENT_VERSION := 1.1.2
 COMPAT_VERSION  := 1.0.0
 #PACKAGE_DOMAIN  := net.siguza.
 
@@ -10,7 +10,7 @@ PKG              = pkg
 
 IGCC            ?= xcrun -sdk iphoneos clang -arch arm64 -arch arm64e
 IGCC_FLAGS      ?= -Wall -O3 -I$(INC)
-DYLIB_FLAGS     ?= -shared -miphoneos-version-min=7.0 -Wl,-install_name,/usr/lib/$(TARGET).$(ABI_VERSION).dylib -Wl,-current_version,$(CURRENT_VERSION) -Wl,-compatibility_version,$(COMPAT_VERSION) -Wl,-no_warn_inits
+DYLIB_FLAGS     ?= -shared -miphoneos-version-min=7.0 -Wl,-install_name,/var/jb/usr/lib/$(TARGET).$(ABI_VERSION).dylib -Wl,-current_version,$(CURRENT_VERSION) -Wl,-compatibility_version,$(COMPAT_VERSION) -Wl,-no_warn_inits
 SIGN            ?= codesign
 SIGN_FLAGS      ?= -s -
 TAPI            ?= xcrun -sdk iphoneos tapi
@@ -43,10 +43,10 @@ $(PKG)/bin/control.tar.gz: $(PKG)/bin/control
 $(PKG)/dev/control.tar.gz: $(PKG)/dev/control
 	$(TAR) $(TAR_FLAGS) -czf $@ --format ustar -C $(PKG)/dev --exclude '.DS_Store' --exclude '._*' ./control
 
-$(PKG)/bin/data.tar.lzma: $(PKG)/bin/data/usr/lib/$(TARGET).$(ABI_VERSION).dylib
+$(PKG)/bin/data.tar.lzma: $(PKG)/bin/data/var/jb/usr/lib/$(TARGET).$(ABI_VERSION).dylib
 	$(TAR) $(TAR_FLAGS) -c --lzma -f $@ --format ustar -C $(PKG)/bin/data --exclude '.DS_Store' --exclude '._*' ./
 
-$(PKG)/dev/data.tar.lzma: $(PKG)/dev/data/usr/lib/$(TARGET).dylib $(PKG)/dev/data/usr/include/$(TARGET).h $(PKG)/dev/data/usr/include/$(TARGET)_plugin.h
+$(PKG)/dev/data.tar.lzma: $(PKG)/dev/data/var/jb/usr/lib/$(TARGET).dylib $(PKG)/dev/data/var/jb/usr/include/$(TARGET).h $(PKG)/dev/data/var/jb/usr/include/$(TARGET)_plugin.h
 	$(TAR) $(TAR_FLAGS) -c --lzma -f $@ --format ustar -C $(PKG)/dev/data --exclude '.DS_Store' --exclude '._*' ./
 
 $(PKG)/bin/debian-binary: | $(PKG)/bin
@@ -82,16 +82,16 @@ $(PKG)/dev/control: | $(PKG)/dev
 	  echo 'Homepage: https://github.com/Siguza/libkrw/'; \
 	) > $@
 
-$(PKG)/bin/data/usr/lib/$(TARGET).$(ABI_VERSION).dylib: $(TARGET).$(ABI_VERSION).dylib | $(PKG)/bin/data/usr/lib
+$(PKG)/bin/data/var/jb/usr/lib/$(TARGET).$(ABI_VERSION).dylib: $(TARGET).$(ABI_VERSION).dylib | $(PKG)/bin/data/var/jb/usr/lib
 	cp $< $@
 
-$(PKG)/dev/data/usr/lib/$(TARGET).dylib: | $(PKG)/dev/data/usr/lib
-	( cd "$(PKG)/dev/data/usr/lib"; ln -sf $(TARGET).$(ABI_VERSION).dylib $(TARGET).dylib; )
+$(PKG)/dev/data/var/jb/usr/lib/$(TARGET).dylib: | $(PKG)/dev/data/var/jb/usr/lib
+	( cd "$(PKG)/dev/data/var/jb/usr/lib"; ln -sf $(TARGET).$(ABI_VERSION).dylib $(TARGET).dylib; )
 
-$(PKG)/dev/data/usr/include/%.h: $(INC)/%.h | $(PKG)/dev/data/usr/include
+$(PKG)/dev/data/var/jb/usr/include/%.h: $(INC)/%.h | $(PKG)/dev/data/var/jb/usr/include
 	cp $< $@
 
-$(PKG)/bin $(PKG)/dev $(PKG)/bin/data/usr/lib $(PKG)/dev/data/usr/lib $(PKG)/dev/data/usr/include:
+$(PKG)/bin $(PKG)/dev $(PKG)/bin/data/var/jb/usr/lib $(PKG)/dev/data/var/jb/usr/lib $(PKG)/dev/data/var/jb/usr/include:
 	mkdir -p $@
 
 clean:
