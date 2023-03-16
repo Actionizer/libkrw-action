@@ -22,7 +22,7 @@ TAR_FLAGS       ?= --uid 0 --gid 0
 
 all: $(TARGET).$(ABI_VERSION).dylib $(TARGET).tbd
 
-deb: $(PACKAGE_DOMAIN)$(TARGET)_$(CURRENT_VERSION)_iphoneos-arm.deb $(PACKAGE_DOMAIN)$(TARGET)-dev_$(CURRENT_VERSION)_iphoneos-arm.deb
+deb: $(PACKAGE_DOMAIN)$(TARGET)_$(CURRENT_VERSION)_iphoneos-arm64.deb $(PACKAGE_DOMAIN)$(TARGET)-dev_$(CURRENT_VERSION)_iphoneos-arm64.deb
 
 $(TARGET).$(ABI_VERSION).dylib: $(SRC)/*.c $(INC)/*.h
 	$(IGCC) $(IGCC_FLAGS) $(DYLIB_FLAGS) -o $@ $(SRC)/*.c
@@ -31,10 +31,10 @@ $(TARGET).$(ABI_VERSION).dylib: $(SRC)/*.c $(INC)/*.h
 $(TARGET).tbd: $(TARGET).$(ABI_VERSION).dylib
 	$(TAPI) $(TAPI_FLAGS) -o $@ $<
 
-$(PACKAGE_DOMAIN)$(TARGET)_$(CURRENT_VERSION)_iphoneos-arm.deb: $(PKG)/bin/control.tar.gz $(PKG)/bin/data.tar.lzma $(PKG)/bin/debian-binary
+$(PACKAGE_DOMAIN)$(TARGET)_$(CURRENT_VERSION)_iphoneos-arm64.deb: $(PKG)/bin/control.tar.gz $(PKG)/bin/data.tar.lzma $(PKG)/bin/debian-binary
 	( cd "$(PKG)/bin"; ar -cr "../../$@" 'debian-binary' 'control.tar.gz' 'data.tar.lzma'; )
 
-$(PACKAGE_DOMAIN)$(TARGET)-dev_$(CURRENT_VERSION)_iphoneos-arm.deb: $(PKG)/dev/control.tar.gz $(PKG)/dev/data.tar.lzma $(PKG)/dev/debian-binary
+$(PACKAGE_DOMAIN)$(TARGET)-dev_$(CURRENT_VERSION)_iphoneos-arm64.deb: $(PKG)/dev/control.tar.gz $(PKG)/dev/data.tar.lzma $(PKG)/dev/debian-binary
 	( cd "$(PKG)/dev"; ar -cr "../../$@" 'debian-binary' 'control.tar.gz' 'data.tar.lzma'; )
 
 $(PKG)/bin/control.tar.gz: $(PKG)/bin/control
