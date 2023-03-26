@@ -74,7 +74,7 @@ $(PKG)/dev/control: | $(PKG)/dev
 	  echo 'Name: libkrw-dev'; \
 	  echo 'Author: Siguza'; \
 	  echo 'Maintainer: Siguza'; \
-	  echo 'Architecture: iphoneos-arm'; \
+	  echo 'Architecture: iphoneos-arm64'; \
 	  echo 'Version: $(CURRENT_VERSION)'; \
 	  echo 'Priority: optional'; \
 	  echo 'Section: Development'; \
