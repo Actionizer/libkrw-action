@@ -2,3 +2,5 @@
 /pkg
 /*.dylib
 /*.deb
+/*.dSYM
+/.idea
