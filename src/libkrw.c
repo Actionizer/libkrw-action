@@ -37,9 +37,31 @@ static int obtain_kcall_funcs(void *plugin) {
     return ENOSYS;
   }
   if (handlers.version > LIBKRW_HANDLERS_VERSION) {
-    fprintf(stderr, "Detected plugin of higher API version, please update libkrw if possible\n");
+    fprintf(stderr, "[-]: %s: %s: Detected plugin of higher API version, please update libkrw if possible\n", TARGET, __FUNCTION__);
   }
   krw_handlers.kcall = handlers.kcall;
+  if(handlers.version < 1) { // backwards compatibility with LIBKRW_HANDLERS_VERSION 0
+    krw_handlers.physread = handlers.physread;
+    krw_handlers.physwrite = handlers.physwrite;
+  }
+  return 0;
+}
+
+static int obtain_physrw_funcs(void *plugin) {
+  krw_plugin_initializer_t init = (krw_plugin_initializer_t)dlsym(plugin, "physrw_initializer");
+  if (init == NULL) return ENOTSUP;
+
+  struct krw_handlers_s handlers = krw_handlers;
+  int r = init(&handlers);
+  if (r != 0) return r;
+
+  // We got a plugin that says it can handle physrw
+  if (handlers.physread == NULL || handlers.physwrite == NULL || handlers.version < 1) {
+    return ENOSYS;
+  }
+  if (handlers.version > LIBKRW_HANDLERS_VERSION) {
+    fprintf(stderr, "[-]: %s: %s: Detected plugin of higher API version, please update libkrw if possible\n", TARGET, __FUNCTION__);
+  }
   krw_handlers.physread = handlers.physread;
   krw_handlers.physwrite = handlers.physwrite;
   return 0;
@@ -58,7 +80,7 @@ static int obtain_krw_funcs(void *plugin) {
     return ENOSYS;
   }
   if (handlers.version > LIBKRW_HANDLERS_VERSION) {
-    fprintf(stderr, "Detected plugin of higher API version, please update libkrw if possible\n");
+    fprintf(stderr, "[-]: %s: %s: Detected plugin of higher API version, please update libkrw if possible\n", TARGET, __FUNCTION__);
   }
   krw_handlers.kbase = handlers.kbase;
   krw_handlers.kread = handlers.kread;
@@ -80,7 +102,7 @@ static void iterate_plugins(int (*callback)(void *), void **check) {
       if (path_size < plugin_path_len) {
         char *newpath = realloc(path, plugin_path_len + 1);
         if (newpath == NULL) {
-          fprintf(stderr, "Fatal Error: unable to realloc\n");
+          libkrw_log(stderr, "[-]: %s: %s: Fatal Error: unable to realloc\n", TARGET, __FUNCTION__);
           continue; // We failed to realloc - try next plugin I guess
         }
         path = newpath;
@@ -88,7 +110,7 @@ static void iterate_plugins(int (*callback)(void *), void **check) {
       strcpy(path+strlen(JBROOT_PATH_CSTRING("/usr/lib/libkrw/")), plugins[i]->d_name);
       void *plugin = dlopen(path, RTLD_LOCAL|RTLD_LAZY);
       if (plugin == NULL) {
-        fprintf(stderr, "Error attempting to load plugin %s: %s\n", path, dlerror());
+        libkrw_log(stderr, "[-]: %s: %s: Error attempting to load plugin %s: %s\n", TARGET, __FUNCTION__, path, dlerror());
         continue;
       }
       int rv = callback(plugin);
@@ -97,9 +119,7 @@ static void iterate_plugins(int (*callback)(void *), void **check) {
       }
 
       if (rv == ENOSYS) {
-#ifdef DEBUG
-        fprintf(stderr, "[-]: [DEBUG]: %s: %s: KRW plugin %s did not provide functions it purported to provide!\n", TARGET, __FUNCTION__, path);
-#endif
+        libkrw_log(stderr, "[-]: %s: %s: KRW plugin %s did not provide functions it purported to provide!\n", TARGET, __FUNCTION__, path);
       }
       // We failed, will try next
       dlclose(plugin);
@@ -113,6 +133,7 @@ static void init_krw_handlers(void *ctx) {
     if (libkrw_initialization(&krw_handlers) != 0) {
         iterate_plugins(&obtain_krw_funcs, (void**)&krw_handlers.kread);
     }
+    iterate_plugins(&obtain_physrw_funcs, (void**)&krw_handlers.physread);
     iterate_plugins(&obtain_kcall_funcs, (void**)&krw_handlers.kcall);
 }
 

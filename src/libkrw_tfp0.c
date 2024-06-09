@@ -39,10 +39,10 @@ static int assure_ktask(void)
       return 0;
     }
   } else if(ret == KERN_INVALID_ARGUMENT) {
-    fprintf(stderr, "[-]: %s: %s: host_get_special_port returned KERN_INVALID_ARGUMENT!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: host_get_special_port returned KERN_INVALID_ARGUMENT!\n", TARGET, __FUNCTION__);
     return EPERM;
   } else {
-    fprintf(stderr, "[-]: %s: %s: host_get_special_port returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+    libkrw_log(stderr, "[-]: %s: %s: host_get_special_port returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
     return EDEVERR;
   }
 
@@ -54,12 +54,12 @@ static int assure_ktask(void)
         gKernelTask = port;
         return 0;
     }
-    fprintf(stderr, "[-]: %s: %s: task_for_pid 0 returned KERN_SUCCESS but port is invalid!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: task_for_pid 0 returned KERN_SUCCESS but port is invalid!\n", TARGET, __FUNCTION__);
     return EDEVERR;
   }
   // This is ugly, but task_for_pid really doesn't tell us what's wrong,
   // so the best we can do is guess? :/
-  fprintf(stderr, "[-]: %s: %s: task_for_pid 0 returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+  libkrw_log(stderr, "[-]: %s: %s: task_for_pid 0 returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
   return EPERM;
 }
 
@@ -69,19 +69,19 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
   }
   int rmd0 = open("/dev/rmd0", O_RDONLY, 0);
   if (rmd0 < 0) {
-    fprintf(stderr, "[-]: %s: %s: Could not get paleinfo!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: Could not get paleinfo!\n", TARGET, __FUNCTION__);
     return EDEVERR;
   }
   uint64_t off = lseek(rmd0, 0, SEEK_SET);
   if (off == -1) {
-    fprintf(stderr, "[-]: %s: %s: Failed to lseek ramdisk to 0\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: Failed to lseek ramdisk to 0\n", TARGET, __FUNCTION__);
     close(rmd0);
     return EBUSY;
   }
   uint32_t pinfo_off;
   ssize_t didRead = read(rmd0, &pinfo_off, sizeof(uint32_t));
   if (didRead != (ssize_t)sizeof(uint32_t)) {
-    fprintf(stderr,
+    libkrw_log(stderr,
             "[-]: %s: %s: Read %ld bytes does not match expected %lu bytes\n",
             TARGET, __FUNCTION__, didRead, sizeof(uint32_t));
     close(rmd0);
@@ -89,7 +89,7 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
   }
   off = lseek(rmd0, pinfo_off, SEEK_SET);
   if (off != pinfo_off) {
-    fprintf(stderr, "[-]: %s: %s: Failed to lseek ramdisk to %u\n", TARGET, __FUNCTION__,
+    libkrw_log(stderr, "[-]: %s: %s: Failed to lseek ramdisk to %u\n", TARGET, __FUNCTION__,
             pinfo_off);
     close(rmd0);
     return EBUSY;
@@ -113,7 +113,7 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
   struct paleinfo_legacy *pinfo_legacy_p = NULL;
   didRead = read(rmd0, pinfo_p, sizeof(struct paleinfo));
   if (didRead != (ssize_t)sizeof(struct paleinfo)) {
-    fprintf(stderr,
+    libkrw_log(stderr,
             "[-]: %s: %s: Read %ld bytes does not match expected %lu bytes\n",
             TARGET, __FUNCTION__, didRead, sizeof(struct paleinfo));
     close(rmd0);
@@ -126,7 +126,7 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
     pinfo_legacy_p = malloc(sizeof(struct paleinfo_legacy));
     didRead = read(rmd0, pinfo_legacy_p, sizeof(struct paleinfo_legacy));
     if (didRead != (ssize_t)sizeof(struct paleinfo_legacy)) {
-      fprintf(stderr,
+      libkrw_log(stderr,
               "[-]: %s: %s: Read %ld bytes does not match expected %lu bytes\n",
               TARGET, __FUNCTION__, didRead, sizeof(struct paleinfo_legacy));
       close(rmd0);
@@ -135,26 +135,26 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
       return EBUSY;
     }
 #ifdef DEBUG
-      fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->magic: %s\n",
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->magic: %s\n",
               TARGET, __FUNCTION__, (char *)&pinfo_legacy_p->magic);
-      fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->magic: 0x%X\n",
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->magic: 0x%X\n",
               TARGET, __FUNCTION__, pinfo_legacy_p->magic);
-      fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->version: 0x%Xd\n",
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->version: 0x%Xd\n",
               TARGET, __FUNCTION__, pinfo_legacy_p->version);
-      fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->flags: 0x%X\n",
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->flags: 0x%X\n",
               TARGET, __FUNCTION__, pinfo_legacy_p->flags);
-      fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->rootdev: %s\n",
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_legacy_p->rootdev: %s\n",
               TARGET, __FUNCTION__, pinfo_legacy_p->rootdev);
 #endif
     if (pinfo_legacy_p->magic != 'PLSH') {
-      fprintf(stderr, "[-]: %s: %s: Detected corrupted paleinfo!\n", TARGET, __FUNCTION__);
+      libkrw_log(stderr, "[-]: %s: %s: Detected corrupted paleinfo!\n", TARGET, __FUNCTION__);
       close(rmd0);
       free(pinfo_p);
       free(pinfo_legacy_p);
       return EFAULT;
     }
     if (pinfo_legacy_p->version != 1U) {
-      fprintf(stderr, "[-]: %s: %s: Unexpected paleinfo version: %u, expected %u\n",
+      libkrw_log(stderr, "[-]: %s: %s: Unexpected paleinfo version: %u, expected %u\n",
               TARGET, __FUNCTION__, pinfo_legacy_p->version, 1U);
       close(rmd0);
       free(pinfo_p);
@@ -180,19 +180,19 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
     free(kerninfo_p);
   } else {
 #ifdef DEBUG
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->magic: %s\n", TARGET,
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->magic: %s\n", TARGET,
             __FUNCTION__, (const char *)&pinfo_p->magic);
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->magic: 0x%X\n", TARGET,
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->magic: 0x%X\n", TARGET,
             __FUNCTION__, pinfo_p->magic);
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->version: 0x%Xd\n", TARGET,
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->version: 0x%Xd\n", TARGET,
             __FUNCTION__, pinfo_p->version);
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->kbase: 0x%llX\n", TARGET,
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->kbase: 0x%llX\n", TARGET,
             __FUNCTION__, pinfo_p->kbase);
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->kslide: 0x%llX\n", TARGET,
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->kslide: 0x%llX\n", TARGET,
             __FUNCTION__, pinfo_p->kslide);
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->flags: 0x%llX\n", TARGET,
+    libkrw_log(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->flags: 0x%llX\n", TARGET,
             __FUNCTION__, pinfo_p->flags);
-    fprintf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->rootdev: %s\n", TARGET,
+    libkrw_logf(stdout, "[+]: [DEBUG]: %s: %s: pinfo_p->rootdev: %s\n", TARGET,
             __FUNCTION__, pinfo_p->rootdev);
 #endif
     if(kslide_out) {
@@ -207,7 +207,7 @@ static int palera1n_get_kernel_info(uint64_t *kslide_out, uint64_t *kbase_out) {
 
 static int tfp0_kbase(uint64_t *addr) {
   if(!addr) {
-    fprintf(stderr, "[-]: %s: %s: provided addr is NULL!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: provided addr is NULL!\n", TARGET, __FUNCTION__);
     return EFAULT;
   }
   int r = assure_ktask();
@@ -222,8 +222,8 @@ static int tfp0_kbase(uint64_t *addr) {
     if(!palera1n_get_kernel_info(NULL, addr)) {
       return 0;
     }
-    fprintf(stderr, "[-]: %s: %s: task info returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
-    fprintf(stderr, "[-]: %s: %s: failed to get palera1n kernel info!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: task info returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+    libkrw_log(stderr, "[-]: %s: %s: failed to get palera1n kernel info!\n", TARGET, __FUNCTION__);
     return EDEVERR;
   }
   // Backwards-compat for jailbreaks that didn't set this
@@ -231,8 +231,8 @@ static int tfp0_kbase(uint64_t *addr) {
     if(!palera1n_get_kernel_info(NULL, addr)) {
       return 0;
     }
-    fprintf(stderr, "[-]: %s: %s: task info is NULL!\n", TARGET, __FUNCTION__);
-    fprintf(stderr, "[-]: %s: %s: failed to get palera1n kernel info!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: task info is NULL!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: failed to get palera1n kernel info!\n", TARGET, __FUNCTION__);
     return ENOTSUP;
   }
   *addr = 0xfffffff007004000 + info.all_image_info_size; // very very legacy :)
@@ -242,7 +242,7 @@ static int tfp0_kbase(uint64_t *addr) {
 static int tfp0_kread(uint64_t from, void *to, size_t len) {
   // Overflow
   if(from + len < from || (mach_vm_address_t)to + len < (mach_vm_address_t)to) {
-    fprintf(stderr, "[-]: %s: %s: read overflow!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: read overflow!\n", TARGET, __FUNCTION__);
     return EINVAL;
   }
 
@@ -256,13 +256,13 @@ static int tfp0_kread(uint64_t from, void *to, size_t len) {
     chunk = len > 0xff0 ? 0xff0 : len;
     kern_return_t ret = mach_vm_read_overwrite(gKernelTask, from, chunk, dst, &chunk);
     if(ret == KERN_INVALID_ARGUMENT || ret == KERN_INVALID_ADDRESS) {
-      fprintf(stderr, "[-]: %s: %s: mach_vm_read_overwrite returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+      libkrw_log(stderr, "[-]: %s: %s: mach_vm_read_overwrite returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
       return EINVAL;
     }
     if(ret != KERN_SUCCESS || chunk == 0) {
       // Check whether we read any bytes at all
       int tmp = dst == (mach_vm_address_t)to ? EDEVERR : EIO;
-      fprintf(stderr, "[-]: %s: %s: mach_vm_read_overwrite returned %s! 0x%llX bytes were read. (%s)\n", TARGET, __FUNCTION__, mach_error_string(ret), dst, strerror(tmp));
+      libkrw_log(stderr, "[-]: %s: %s: mach_vm_read_overwrite returned %s! 0x%llX bytes were read. (%s)\n", TARGET, __FUNCTION__, mach_error_string(ret), dst, strerror(tmp));
       return tmp;
     }
     from += chunk;
@@ -275,7 +275,7 @@ static int tfp0_kwrite(void *from, uint64_t to, size_t len)
 {
   // Overflow
   if((mach_vm_address_t)from + len < (mach_vm_address_t)from || to + len < to) {
-    fprintf(stderr, "[-]: %s: %s: write overflow!\n", TARGET, __FUNCTION__);
+    libkrw_log(stderr, "[-]: %s: %s: write overflow!\n", TARGET, __FUNCTION__);
     return EINVAL;
   }
 
@@ -289,13 +289,13 @@ static int tfp0_kwrite(void *from, uint64_t to, size_t len)
     chunk = len > 0xff0 ? 0xff0 : len;
     kern_return_t ret = mach_vm_write(gKernelTask, to, src, chunk);
     if(ret == KERN_INVALID_ARGUMENT || ret == KERN_INVALID_ADDRESS) {
-      fprintf(stderr, "[-]: %s: %s: mach_vm_write returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+      libkrw_log(stderr, "[-]: %s: %s: mach_vm_write returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
       return EINVAL;
     }
     if(ret != KERN_SUCCESS) {
       // Check whether we wrote any bytes at all
       int tmp = src == (mach_vm_address_t)from ? EDEVERR : EIO;
-      fprintf(stderr, "[-]: %s: %s: mach_vm_write returned %s! 0x%llX bytes were read. (%s)\n", TARGET, __FUNCTION__, mach_error_string(ret), src, strerror(tmp));
+      libkrw_log(stderr, "[-]: %s: %s: mach_vm_write returned %s! 0x%llX bytes were read. (%s)\n", TARGET, __FUNCTION__, mach_error_string(ret), src, strerror(tmp));
       return tmp;
     }
     src += chunk;
@@ -318,14 +318,14 @@ static int tfp0_kmalloc(uint64_t *addr, size_t size)
     return 0;
   }
   if(ret == KERN_INVALID_ARGUMENT) {
-    fprintf(stderr, "[-]: %s: %s: mach_vm_allocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+    libkrw_log(stderr, "[-]: %s: %s: mach_vm_allocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
     return EINVAL;
   }
   if(ret == KERN_NO_SPACE || ret == KERN_RESOURCE_SHORTAGE) {
-    fprintf(stderr, "[-]: %s: %s: mach_vm_allocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+    libkrw_log(stderr, "[-]: %s: %s: mach_vm_allocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
     return ENOMEM;
   }
-  fprintf(stderr, "[-]: %s: %s: mach_vm_allocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+  libkrw_log(stderr, "[-]: %s: %s: mach_vm_allocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
   return EDEVERR;
 }
 
@@ -341,10 +341,10 @@ static int tfp0_kdealloc(uint64_t addr, size_t size)
     return 0;
   }
   if(ret == KERN_INVALID_ARGUMENT) {
-    fprintf(stderr, "[-]: %s: %s: mach_vm_deallocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+    libkrw_log(stderr, "[-]: %s: %s: mach_vm_deallocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
     return EINVAL;
   }
-  fprintf(stderr, "[-]: %s: %s: mach_vm_deallocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
+  libkrw_log(stderr, "[-]: %s: %s: mach_vm_deallocate returned %s!\n", TARGET, __FUNCTION__, mach_error_string(ret));
   return EDEVERR;
 }
 

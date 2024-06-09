@@ -8,6 +8,25 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+static int val_cached = 0;
+
+static inline int libkrw_log(FILE *stream, const char *format, ...) {
+  int ret = -1;
+  if(!val_cached) {
+    const char *var = getenv("LIBKRW_LOG");
+    if (var && strlen(var) > 0) {
+      val_cached = atoi(var);
+    }
+  }
+  if(val_cached) {
+    va_list args;
+    va_start(args, format);
+    ret = fprintf(stream, format, args);
+    va_end(args);
+  }
+  return ret;
+}
+
 /**
  * libkrw - Library for kernel read/write
  *

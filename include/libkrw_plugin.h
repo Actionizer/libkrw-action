@@ -54,7 +54,7 @@ typedef int (*krw_physread_func_t)(uint64_t from, void *to, size_t len, uint8_t 
 typedef int (*krw_physwrite_func_t)(void *from, uint64_t to, size_t len, uint8_t granule);
 
 // This struct must only be extended so that old plugins can still load
-#define LIBKRW_HANDLERS_VERSION 0
+#define LIBKRW_HANDLERS_VERSION 1
 struct krw_handlers_s {
     uint64_t version;
     krw_kbase_func_t kbase;
