@@ -350,10 +350,6 @@ static int tfp0_kdealloc(uint64_t addr, size_t size)
 
 __attribute__((used))
 int krw_initializer(krw_handlers_t handlers) {
-  // Make sure structure version is not lower than what we compiled with
-  if (handlers->version < LIBKRW_HANDLERS_VERSION) {
-    return EPROTONOSUPPORT;
-  }
   // Set the version in the struct that libkrw will read to the version we compled as
   // so that it can test if needed
   handlers->version = LIBKRW_HANDLERS_VERSION;

@@ -21,7 +21,7 @@ static inline int libkrw_log(FILE *stream, const char *format, ...) {
   if(val_cached) {
     va_list args;
     va_start(args, format);
-    ret = fprintf(stream, format, args);
+    ret = vfprintf(stream, format, args);
     va_end(args);
   }
   return ret;

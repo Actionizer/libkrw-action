@@ -2,7 +2,7 @@
 archs:           [ arm64, arm64e ]
 platform:        ios
 flags:           [ not_app_extension_safe ]
-install-name:    '/var/jb/usr/lib/libkrw.0.dylib'
+install-name:    '@rpath/libkrw.0.dylib'
 current-version: 1.1.2
 exports:
   - archs:           [ arm64, arm64e ]

@@ -89,16 +89,23 @@ static int obtain_krw_funcs(void *plugin) {
   krw_handlers.kdealloc = handlers.kdealloc;
   return 0;
 }
-
+#include <dlfcn.h>
 static void iterate_plugins(int (*callback)(void *), void **check) {
   struct dirent **plugins;
-  ssize_t nument = scandir(JBROOT_PATH_CSTRING("/usr/lib/libkrw"), &plugins, &scandir_dylib_select, &scandir_alpha_compar);
+  char *krw_path = NULL;
+  if(access("/usr/lib/libkrw/", F_OK) == 0) {
+    krw_path = "/usr/lib/libkrw/";
+  } else {
+    krw_path = JBROOT_PATH_CSTRING("/usr/lib/libkrw/");
+  }
+  libkrw_log(stdout, "[+]: %s: %s: krw_path: %s\n", TARGET, __FUNCTION__, krw_path);
+  ssize_t nument = scandir(krw_path, &plugins, &scandir_dylib_select, &scandir_alpha_compar);
   // Load any kcall handlers
   if (nument != -1) {
-    char *path = strdup(JBROOT_PATH_CSTRING("/usr/lib/libkrw/"));
-    size_t path_size = strlen(JBROOT_PATH_CSTRING("/usr/lib/libkrw/"));
+    char *path = strdup(krw_path);
+    size_t path_size = strlen(krw_path);
     for (int i=0; *check == NULL && i<nument; i++) {
-      size_t plugin_path_len = strlen(JBROOT_PATH_CSTRING("/usr/lib/libkrw/")) + plugins[i]->d_namlen;
+      size_t plugin_path_len = strlen(krw_path) + plugins[i]->d_namlen;
       if (path_size < plugin_path_len) {
         char *newpath = realloc(path, plugin_path_len + 1);
         if (newpath == NULL) {
@@ -107,7 +114,7 @@ static void iterate_plugins(int (*callback)(void *), void **check) {
         }
         path = newpath;
       }
-      strcpy(path+strlen(JBROOT_PATH_CSTRING("/usr/lib/libkrw/")), plugins[i]->d_name);
+      strcpy(path+strlen(krw_path), plugins[i]->d_name);
       void *plugin = dlopen(path, RTLD_LOCAL|RTLD_LAZY);
       if (plugin == NULL) {
         libkrw_log(stderr, "[-]: %s: %s: Error attempting to load plugin %s: %s\n", TARGET, __FUNCTION__, path, dlerror());
