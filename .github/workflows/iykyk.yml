@@ -1,6 +1,7 @@
 name: Build
 on: 
    workflow_dispatch:
+   push:
 jobs:
    build:
       name: Build & Upload Artifact
@@ -12,6 +13,6 @@ jobs:
            run: |
               ROOTLESS=1
               cd ${{ GITHUB.WORKSPACE }}
-              make all --debug=v
+              make --debug=v
               echo "Folder listing:"
               ls
