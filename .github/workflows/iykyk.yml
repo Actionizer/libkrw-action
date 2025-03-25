@@ -6,6 +6,8 @@ jobs:
       name: Build & Upload Artifact
       runs-on: macOS-latest
       steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
          - name: Build (i guess)
            run: |
               ROOTLESS = 1
