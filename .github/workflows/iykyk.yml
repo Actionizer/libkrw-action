@@ -17,3 +17,13 @@ jobs:
               make deb --debug=v
               echo "Folder listing:"
               ls
+         - name: Upload No.1
+           uses: actions/upload-artifact@v4
+           with:
+              name: libkrw0-tfp0_1.1.2_iphoneos-arm64.deb
+              path: ./libkrw0-tfp0_1.1.2_iphoneos-arm64.deb
+         - name: Upload No.2
+           uses: actions/upload-artifact@v4
+           with:
+              name: libkrw0_1.1.2_iphoneos-arm64.deb
+              path: ./libkrw0_1.1.2_iphoneos-arm64.deb
