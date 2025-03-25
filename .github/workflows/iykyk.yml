@@ -9,4 +9,6 @@ jobs:
          - name: Build (i guess)
            run: |
               cd ${{ GITHUB.WORKSPACE }}
-              make all
+              make deb
+              echo "Folder listing:"
+              ls
