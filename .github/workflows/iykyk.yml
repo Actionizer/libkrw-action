@@ -2,3 +2,11 @@ name: Build
 on: 
    workflow_dispatch:
 jobs:
+   build:
+      name: Build & Upload Artifact
+      runs-on: macOS-latest
+      steps:
+         - name: Build (i guess)
+           run: |
+              
+           
