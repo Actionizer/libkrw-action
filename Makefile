@@ -2,6 +2,7 @@ ABI_VERSION     := 0
 CURRENT_VERSION := 1.1.2
 COMPAT_VERSION  := 1.0.0
 #PACKAGE_DOMAIN  := net.siguza.
+ROOTLESS := 1
 
 TARGET           = libkrw
 SRC              = src
