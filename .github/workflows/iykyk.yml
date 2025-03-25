@@ -11,8 +11,9 @@ jobs:
            uses: actions/checkout@v4
          - name: Build (i guess)
            run: |
-              ROOTLESS=1
+              export ROOTLESS=1
               cd ${{ GITHUB.WORKSPACE }}
-              make --debug=v
+              git submodule update --init --recursive
+              make all --debug=v
               echo "Folder listing:"
               ls
