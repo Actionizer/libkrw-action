@@ -8,5 +8,5 @@ jobs:
       steps:
          - name: Build (i guess)
            run: |
-              
-           
+              cd ${{ GITHUB.WORKSPACE }}
+              make all
